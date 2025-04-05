@@ -1,0 +1,45 @@
+body {
+    background-color: #f5f5f5;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.security-score {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.severity-high {
+    background-color: #ffcccc;
+    color: #990000;
+}
+
+.severity-medium {
+    background-color: #fff4cc;
+    color: #997700;
+}
+
+.severity-low {
+    background-color: #e6f2ff;
+    color: #004080;
+}
+
+.status-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-label {
+    font-weight: bold;
+}
