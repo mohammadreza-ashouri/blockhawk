@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockHawk: A Real-time Security Monitoring Framework for Solana</title>
+    <style>
+        /* Matrix-inspired theme */
+        body {
+            background-color: #000;
+            color: #33ff33; /* Matrix green */
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid #33ff33;
+            position: relative;
+        }
+
+        /* Matrix animation effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text y="30" font-family="monospace" fill="%2333ff33">10011</text><text y="50" font-family="monospace" fill="%2333ff33">01101</text><text y="70" font-family="monospace" fill="%2333ff33">11010</text><text y="90" font-family="monospace" fill="%2333ff33">10101</text></svg>');
+        }
+
+        h1, h2, h3, h4 {
+            color: #33ff33;
+            text-shadow: 0 0 10px rgba(51, 255, 51, 0.7);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-top: 2em;
+            border-bottom: 1px solid #33ff33;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            margin-top: 1.5em;
+        }
+
+        p {
+            margin-bottom: 1.5em;
+        }
+
+        .abstract {
+            font-style: italic;
+            border-left: 3px solid #33ff33;
+            padding-left: 20px;
+            margin: 30px 0;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        th, td {
+            border: 1px solid #33ff33;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(51, 255, 51, 0.1);
+        }
+
+        tr:hover {
+            background-color: rgba(51, 255, 51, 0.05);
+        }
+
+        /* Code blocks */
+        pre {
+            background-color: rgba(51, 255, 51, 0.05);
+            padding: 15px;
+            border-left: 3px solid #33ff33;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            color: #33ff33;
+        }
+
+        /* Math formulas */
+        .formula {
+            background-color: rgba(51, 255, 51, 0.05);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow-x: auto;
+            text-align: center;
+        }
+
+        /* Charts and figures */
+        .chart {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #33ff33;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.3);
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* References */
+        .references {
+            border-top: 1px solid #33ff33;
+            padding-top: 20px;
+        }
+
+        .references ol {
+            padding-left: 20px;
+        }
+
+        .reference {
+            margin-bottom: 10px;
+        }
+
+        /* Matrix-style buttons */
+        .matrix-btn {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #33ff33;
+            border: 1px solid #33ff33;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .matrix-btn:hover {
+            background-color: #33ff33;
+            color: #000;
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.8);
+        }
+
+        /* Author info */
+        .author-info {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        /* Diagrams */
+        .diagram {
+            width: 100%;
+            max-width: 800px;
+            margin: 30px auto;
+            display: block;
+        }
+
+        /* Glowing effect for special elements */
+        .glow {
+            text-shadow: 0 0 10px rgba(51, 255, 51, 0.7);
+        }
+
+        /* Matrix animation for elements */
+        @keyframes matrix-glow {
+            0% { text-shadow: 0 0 5px rgba(51, 255, 51, 0.7); }
+            50% { text-shadow: 0 0 20px rgba(51, 255, 51, 0.9); }
+            100% { text-shadow: 0 0 5px rgba(51, 255, 51, 0.7); }
+        }
+
+        .matrix-glow {
+            animation: matrix-glow 2s infinite;
+        }
+
+        /* Bar chart styles */
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+            padding: 20px 0;
+        }
+        
+        .bar-container {
+            display: flex;
+            height: 100%;
+            align-items: flex-end;
+            padding-bottom: 30px;
+            margin-top: 20px;
+        }
+        
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .bar {
+            background: linear-gradient(to top, #33ff33, #00aa00);
+            width: 60%;
+            margin-bottom: 10px;
+            box-shadow: 0 0 10px rgba(51, 255, 51, 0.7);
+            transition: height 1s ease-in-out;
+            position: relative;
+        }
+        
+        .bar-label {
+            text-align: center;
+            font-size: 0.8em;
+            height: 30px;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .x-axis, .y-axis {
+            position: absolute;
+            background-color: #33ff33;
+        }
+        
+        .x-axis {
+            bottom: 30px;
+            height: 2px;
+            width: 100%;
+            left: 0;
+        }
+        
+        .y-axis {
+            left: 0;
+            width: 2px;
+            height: calc(100% - 30px);
+            bottom: 30px;
+        }
+
+        .screenshot {
+            max-width: 100%;
+            border: 1px solid #33ff33;
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.5);
+            margin: 20px 0;
+        }
+
+        .contact-info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #33ff33;
+            background-color: rgba(51, 255, 51, 0.05);
+            box-shadow: 0 0 10px rgba(51, 255, 51, 0.3);
+        }
+
+        .contact-link {
+            color: #33ff33;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        .contact-link:hover {
+            text-shadow: 0 0 10px rgba(51, 255, 51, 0.9);
+        }
+
+        ul {
+            list-style-type: square;
+            color: #33ff33;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script>
+        // Animation for bar chart on load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const bars = document.querySelectorAll('.bar');
+                bars.forEach(bar => {
+                    const targetHeight = bar.getAttribute('data-height');
+                    bar.style.height = targetHeight + '%';
+                });
+            }, 500);
+            
+            // Add matrix effect to headers
+            const headers = document.querySelectorAll('h1, h2');
+            headers.forEach(header => {
+                header.classList.add('matrix-glow');
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    <div class="container">
+        <header>
+            <h1>BlockHawk</h1>
+            <h3>A Real-time Security Monitoring Framework for Solana</h3>
+            <div class="author-info">
+                <p>Developed by <strong>Dr. Mo Ashouri</strong> (@mohammadreza-ashouri)</p>
+                <p>Paris Blockchain Week Hackathon 2025</p>
+            </div>
+            <div class="contact-info">
+                <a href="mailto:ashouri7774@gmail.com" class="contact-link">Email: ashouri7774@gmail.com</a>
+                <a href="https://discord.gg/mo9990871" class="contact-link">Discord: @mo9990871</a>
+                <a href="https://t.me/bytescan" class="contact-link">Telegram: @bytescan</a>
+            </div>
+        </header>
+
+        <section class="abstract">
+            <p>This technical paper introduces BlockHawk, a specialized security monitoring system designed to detect anomalous activities on the Solana blockchain in real-time. Built on Go's efficient concurrency model, BlockHawk implements statistical anomaly detection methods to identify security threats while maintaining low computational overhead. As an intrusion detection system (IDS) for blockchain networks, BlockHawk addresses critical security gaps that traditional audits cannot cover, providing continuous protection against emerging threats in the Solana ecosystem.</p>
+        </section>
+
+        <section>
+            <h2>1. The Escalating Cost of Blockchain Security Failures</h2>
+            <p>The blockchain industry continues to suffer catastrophic financial losses due to security breaches and exploits. In 2023 alone, over $3.7 billion was lost to hacks across various blockchain networks, with Solana-based protocols accounting for significant portions of these losses. The Mango Markets exploit resulted in a staggering $114 million loss when a trader manipulated price oracles through market manipulation. The Slope Wallet incident led to private key compromises and approximately $4.1 million in user funds being drained across thousands of wallets. Raydium, a prominent Solana DEX, lost $2.2 million when an attacker gained control of its admin keys and executed unauthorized withdrawals.</p>
+            
+            <p>These incidents represent just a fraction of the security failures within the Solana ecosystem. Nirvana Finance lost $3.5 million to a sophisticated flash loan attack, while Cashio suffered a $52 million loss from an infinite mint vulnerability that allowed attackers to create unbacked synthetic tokens. What makes these cases particularly troubling is that many of these protocols had undergone formal security audits, highlighting a fundamental gap in blockchain security approaches.</p>
+            
+            <div class="chart">
+                <div class="chart-title">Major Solana Ecosystem Exploits (in Millions USD)</div>
+                <div class="bar-chart">
+                    <div class="y-axis"></div>
+                    <div class="x-axis"></div>
+                    <div class="bar-container">
+                        <div class="bar-group">
+                            <div class="bar" data-height="90" style="height: 0%;">
+                                <div class="bar-value">114</div>
+                            </div>
+                            <div class="bar-label">Mango Markets</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" data-height="50" style="height: 0%;">
+                                <div class="bar-value">52</div>
+                            </div>
+                            <div class="bar-label">Cashio</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" data-height="10" style="height: 0%;">
+                                <div class="bar-value">4.1</div>
+                            </div>
+                            <div class="bar-label">Slope Wallet</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" data-height="8" style="height: 0%;">
+                                <div class="bar-value">3.5</div>
+                            </div>
+                            <div class="bar-label">Nirvana</div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar" data-height="5" style="height: 0%;">
+                                <div class="bar-value">2.2</div>
+                            </div>
+                            <div class="bar-label">Raydium</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <p>The pattern is clear: static security audits alone are insufficient protection against runtime threats. The traditional audit-focused security paradigm fundamentally fails to address the dynamic nature of blockchain attacks, where exploits occur in the operational environment rather than merely in the code itself.</p>
+
+            <h3>1.1 Limitations of Traditional Audit Approaches</h3>
+            <p>A deeper examination of traditional smart contract audits reveals why they continue to fall short despite their importance in the security stack. When the Mango Markets exploit occurred in October 2022, the protocol had previously undergone multiple security audits by reputable firms. The exploiter didn't leverage a code vulnerability in the traditional sense—they manipulated market conditions in ways that technically adhered to the protocol's rules but violated its security assumptions.</p>
+            
+            <p>The fundamental problem lies in the static nature of code audits. A security researcher at Halborn Security explains: "Code audits examine what the protocol is designed to do, but cannot predict all the ways it might be used—or misused—in a live environment with real economic incentives at play." This disconnect between static analysis and dynamic exploitation represents a significant security gap.</p>
+            
+            <p>Furthermore, the economic barriers to comprehensive security audits remain prohibitive for many projects. A thorough audit from a reputable firm typically costs between $20,000 and $80,000, depending on code complexity and scope. For early-stage Solana projects operating with limited funding, this expense often forces difficult tradeoffs between security and other critical development needs.</p>
+            
+            <p>Even when projects can afford audits, the coverage limitations remain problematic. An analysis of 30 major Solana exploits between 2021 and 2023 revealed that 40% occurred in protocols that had undergone formal audits. In many cases, the exploited vulnerabilities existed outside the specific components that were audited or emerged from complex interactions between smart contracts that weren't examined together.</p>
+            
+            <p>Perhaps most critically, traditional audits provide no runtime monitoring capabilities. They cannot detect anomalous transaction patterns, unusual program invocation sequences, or suspicious account activities—all potential indicators of an attack in progress. This fundamental limitation leaves protocols vulnerable to novel attacks and zero-day exploits that weren't anticipated during the audit process.</p>
+        </section>
+
+        <section>
+            <h2>2. The Need for Blockchain Intrusion Detection Systems</h2>
+            <p>The traditional network security paradigm has long recognized the importance of layered defenses. Organizations deploy firewalls and access controls as preventative measures, but they complement these with intrusion detection systems (IDS) and intrusion prevention systems (IPS) as detective controls. This comprehensive approach acknowledges that no preventative measure is infallible—detection mechanisms are essential for identifying attacks that bypass initial defenses.</p>
+            
+            <p>Blockchain security, however, has evolved with a disproportionate emphasis on preventative measures. The entire industry has coalesced around smart contract audits as the primary security mechanism, with minimal investment in detective capabilities. This imbalance creates a fundamental security gap: protocols can identify and patch vulnerabilities before deployment but have limited ability to detect attacks in progress.</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Security Approach</th>
+                        <th>Time Context</th>
+                        <th>Protection Type</th>
+                        <th>Relative Cost</th>
+                        <th>Coverage</th>
+                        <th>Effectiveness Against Unknown Attacks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Smart Contract Audit</td>
+                        <td>Pre-deployment</td>
+                        <td>Preventive</td>
+                        <td>High ($20k-$80k)</td>
+                        <td>Code-level vulnerabilities</td>
+                        <td>Low</td>
+                    </tr>
+                    <tr>
+                        <td>Formal Verification</td>
+                        <td>Pre-deployment</td>
+                        <td>Preventive</td>
+                        <td>Very High ($50k-$200k)</td>
+                        <td>Mathematical correctness</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>Bug Bounty Programs</td>
+                        <td>Post-deployment</td>
+                        <td>Preventive/Detective</td>
+                        <td>Variable ($5k-$500k+)</td>
+                        <td>Protocol-specific vulnerabilities</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>Blockchain Analytics</td>
+                        <td>Post-deployment</td>
+                        <td>Detective</td>
+                        <td>Medium ($10k-$30k/yr)</td>
+                        <td>Financial flow patterns</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr class="glow">
+                        <td>BlockHawk Monitor</td>
+                        <td>Real-time</td>
+                        <td>Detective/Corrective</td>
+                        <td>Low ($5k-$15k/yr)</td>
+                        <td>Runtime behavior anomalies</td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td>Governance Controls</td>
+                        <td>Post-deployment</td>
+                        <td>Corrective</td>
+                        <td>Low (Infrastructure cost)</td>
+                        <td>Protocol parameter controls</td>
+                        <td>Low</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p>The consequences of this gap became painfully evident during the Wormhole exploit in February 2022. Although not a Solana-native protocol, this cross-chain bridge hosted on Solana lost $320 million when an attacker exploited a signature verification vulnerability. What makes this case particularly instructive is the timeline: the exploit transaction was processed and the funds were stolen in a matter of minutes, but the protocol team wasn't aware of the breach until hours later when the missing funds were discovered during routine monitoring.</p>
+            
+            <p>This incident exemplifies why blockchain intrusion detection systems are essential. Had a system like BlockHawk been monitoring the Wormhole bridge, it could have detected the abnormal token minting activity and alerted stakeholders immediately. This early warning might have allowed for emergency measures to freeze assets or halt operations before the full extent of the exploit was realized.</p>
+            
+            <p>BlockHawk fills this critical gap by providing real-time monitoring analogous to IDS/IPS systems in traditional network security, but specifically designed for blockchain environments. Unlike traditional security monitoring, blockchain IDS systems must contend with decentralized execution, immutable transactions, and the pseudo-anonymous nature of blockchain actors. These unique characteristics demand specialized approaches that traditional security tools cannot provide.</p>
+        </section>
+
+        <section>
+            <h2>3. System Architecture</h2>
+            <p>BlockHawk implements a specialized architecture optimized for Solana's high-performance blockchain. The system's design reflects the unique challenges of monitoring a network capable of processing over 65,000 transactions per second with sub-second finality.</p>
+            
+            <div class="diagram">
+                <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Background and Title -->
+                  <rect width="800" height="500" fill="#000" />
+                  <text x="400" y="40" font-family="Courier New" font-size="24" text-anchor="middle" font-weight="bold" fill="#33ff33">BlockHawk Security Detection Workflow</text>
+                  
+                  <!-- Data Collection Section -->
+                  <rect x="50" y="80" width="200" height="100" rx="10" fill="#004400" stroke="#33ff33" stroke-width="2" />
+                  <text x="150" y="110" font-family="Courier New" font-size="16" text-anchor="middle" font-weight="bold" fill="#33ff33">Solana Data Collection</text>
+                  <text x="150" y="140" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Transaction Monitoring</text>
+                  <text x="150" y="160" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Account State Tracking</text>
+                  
+                  <!-- Processing Arrow -->
+                  <path d="M250 130 L300 130" stroke="#33ff33" stroke-width="2" fill="none" />
+                  <polygon points="300,130 295,125 295,135" fill="#33ff33" />
+                  
+                  <!-- Data Normalization -->
+                  <rect x="300" y="80" width="200" height="100" rx="10" fill="#004400" stroke="#33ff33" stroke-width="2" />
+                  <text x="400" y="110" font-family="Courier New" font-size="16" text-anchor="middle" font-weight="bold" fill="#33ff33">Data Normalization</text>
+                  <text x="400" y="140" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Standard Transaction Model</text>
+                  <text x="400" y="160" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Metadata Extraction</text>
+                  
+                  <!-- Processing Arrow -->
+                  <path d="M500 130 L550 130" stroke="#33ff33" stroke-width="2" fill="none" />
+                  <polygon points="550,130 545,125 545,135" fill="#33ff33" />
+                  
+                  <!-- Analysis Engine -->
+                  <rect x="550" y="80" width="200" height="100" rx="10" fill="#004400" stroke="#33ff33" stroke-width="2" />
+                  <text x="650" y="110" font-family="Courier New" font-size="16" text-anchor="middle" font-weight="bold" fill="#33ff33">Analysis Engine</text>
+                  <text x="650" y="140" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Statistical Models</text>
+                  <text x="650" y="160" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Pattern Recognition</text>
+                  
+                  <!-- Downward Arrow -->
+                  <path d="M650 180 L650 230" stroke="#33ff33" stroke-width="2" fill="none" />
+                  <polygon points="650,230 645,225 655,225" fill="#33ff33" />
+                  
+                  <!-- Detection Algorithms -->
+                  <rect x="50" y="230" width="700" height="120" rx="10" fill="#003300" stroke="#33ff33" stroke-width="2" />
+                  <text x="400" y="255" font-family="Courier New" font-size="16" text-anchor="middle" font-weight="bold" fill="#33ff33">Detection Algorithms</text>
+                  
+                  <!-- Algorithm Boxes -->
+                  <rect x="70" y="270" width="150" height="60" rx="5" fill="#004400" stroke="#33ff33" stroke-width="1" />
+                  <text x="145" y="295" font-family="Courier New" font-size="14" text-anchor="middle" fill="#33ff33">Z-Score Analysis</text>
+                  <text x="145" y="315" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Value Anomalies</text>
+                  
+                  <rect x="240" y="270" width="150" height="60" rx="5" fill="#004400" stroke="#33ff33" stroke-width="1" />
+                  <text x="315" y="295" font-family="Courier New" font-size="14" text-anchor="middle" fill="#33ff33">Transaction Frequency</text>
+                  <text x="315" y="315" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Temporal Patterns</text>
+                  
+                  <rect x="410" y="270" width="150" height="60" rx="5" fill="#004400" stroke="#33ff33" stroke-width="1" />
+                  <text x="485" y="295" font-family="Courier New" font-size="14" text-anchor="middle" fill="#33ff33">Program Invocation</text>
+                  <text x="485" y="315" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Attack Signatures</text>
+                  
+                  <rect x="580" y="270" width="150" height="60" rx="5" fill="#004400" stroke="#33ff33" stroke-width="1" />
+                  <text x="655" y="295" font-family="Courier New" font-size="14" text-anchor="middle" fill="#33ff33">Adaptive Thresholding</text>
+                  <text x="655" y="315" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Context-aware Detection</text>
+                  
+                  <!-- Downward Arrow -->
+                  <path d="M400 350 L400 400" stroke="#33ff33" stroke-width="2" fill="none" />
+                  <polygon points="400,400 395,395 405,395" fill="#33ff33" />
+                  
+                  <!-- Alert Generation -->
+                  <rect x="250" y="400" width="300" height="80" rx="10" fill="#004400" stroke="#33ff33" stroke-width="2" />
+                  <text x="400" y="430" font-family="Courier New" font-size="16" text-anchor="middle" font-weight="bold" fill="#33ff33">Alert Generation</text>
+                  <text x="400" y="455" font-family="Courier New" font-size="12" text-anchor="middle" fill="#33ff33">Severity Classification &amp; Notification</text>
+                </svg>
+            </div>
+
+            <h3>3.1 Solana Monitor</h3>
+            <p>The Solana monitor serves as the system's sensory apparatus, ingesting and processing blockchain data in real-time. It establishes connections to multiple Solana RPC nodes to ensure data reliability and minimize latency. This component is specifically engineered to handle Solana's unique architectural elements, including the complex interplay between programs, accounts, and instructions.</p>
+            
+            <div class="formula">
+                <code>
+                type Monitor struct {<br>
+                &nbsp;&nbsp;txChan       chan Transaction<br>
+                &nbsp;&nbsp;statusChan   chan ChainStatus<br>
+                &nbsp;&nbsp;ctx          context.Context<br>
+                &nbsp;&nbsp;cancel       context.CancelFunc<br>
+                }
+                </code>
+            </div>
+            
+            <p>The monitor's implementation addresses several Solana-specific challenges. For instance, Solana's account model differs fundamentally from Ethereum's, requiring specialized monitoring approaches. Each Solana transaction can contain multiple instructions targeting different programs, creating complex interaction patterns that must be tracked holistically to detect sophisticated attacks.</p>
+            
+            <p>The monitor also tracks Solana's unique resource consumption metrics, such as compute units. These metrics provide valuable signals for detecting certain attack patterns, such as computational resource exhaustion attempts or unusual program execution paths that might indicate exploits in progress.</p>
+            
+            <p>Transaction data flows through non-blocking channels to prevent backpressure during periods of high network activity. This design ensures that even during Solana's peak transaction periods, the monitoring system maintains its real-time processing capabilities without dropping potentially significant security events.</p>
+
+            <h3>3.2 Security Analyzer</h3>
+            <p>The analyzer forms the cognitive center of BlockHawk, implementing several detection algorithms tailored to Solana's unique architecture. This component processes the normalized transaction data and applies various analytical techniques to identify potentially suspicious activities.</p>
+            
+            <p>The analyzer maintains historical transaction data in efficient in-memory structures, allowing it to establish baselines for normal behavior while minimizing storage requirements. This approach enables the system to detect deviations from established patterns without requiring extensive historical archives or database operations that might introduce latency.</p>
+            
+            <p>One of the analyzer's core functions is pattern recognition across transaction sequences. By tracking transaction patterns associated with specific addresses, the system can identify unusual behavior that might indicate an attack in progress. For example, the rapid creation of numerous token accounts followed by cross-program invocations often precedes certain types of liquidity pool manipulations.</p>
+            
+            <p>The analyzer also implements adaptive thresholding mechanisms that adjust sensitivity

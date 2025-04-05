@@ -115,6 +115,10 @@ func setupHTTPServer() {
 	fs := http.FileServer(http.Dir("./web/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
+	// Serve docs files
+	docsFs := http.FileServer(http.Dir("./web/docs"))
+	http.Handle("/docs/", http.StripPrefix("/docs/", docsFs))
+
 	// API endpoints
 	http.HandleFunc("/api/alerts", getAlertsHandler)
 	http.HandleFunc("/api/status", getStatusHandler)
