@@ -1,45 +1,106 @@
 body {
-    background-color: #f5f5f5;
+    background-color: #000;
+    color: #33ff33; /* Matrix green */
+    font-family: 'Courier New', monospace;
+}
+
+.navbar {
+    background-color: #111 !important;
+    border-bottom: 1px solid #33ff33;
 }
 
 .card {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #0a0a0a;
+    border: 1px solid #33ff33;
+    box-shadow: 0 0 10px rgba(51, 255, 51, 0.3);
+    margin-bottom: 20px;
 }
 
-.navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
+.card-header {
+    background-color: rgba(51, 255, 51, 0.1) !important;
+    color: #33ff33 !important;
+    border-bottom: 1px solid #33ff33;
+}
+
+.table {
+    color: #33ff33;
+}
+
+.table thead th {
+    border-bottom: 2px solid #33ff33;
+}
+
+.table td, .table th {
+    border-top: 1px solid #33ff33;
 }
 
 .security-score {
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: bold;
-}
-
-.severity-high {
-    background-color: #ffcccc;
-    color: #990000;
-}
-
-.severity-medium {
-    background-color: #fff4cc;
-    color: #997700;
-}
-
-.severity-low {
-    background-color: #e6f2ff;
-    color: #004080;
+    text-shadow: 0 0 10px rgba(51, 255, 51, 0.7);
 }
 
 .status-item {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(51, 255, 51, 0.3);
 }
 
-.status-item:last-child {
-    border-bottom: none;
+.top-buttons {
+    margin: 20px 0;
 }
 
-.status-label {
-    font-weight: bold;
+.matrix-btn {
+    background-color: #000;
+    color: #33ff33;
+    border: 1px solid #33ff33;
+    padding: 8px 16px;
+    margin-right: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+}
+
+.matrix-btn:hover {
+    background-color: #33ff33;
+    color: #000;
+    box-shadow: 0 0 15px rgba(51, 255, 51, 0.8);
+}
+
+.author-card {
+    background-color: rgba(51, 255, 51, 0.05);
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.matrix-animation {
+    position: relative;
+}
+
+.matrix-animation::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                url('/static/img/matrix-bg.gif');
+    opacity: 0.1;
+    z-index: -1;
+}
+
+/* Alert severity colors */
+.severity-high {
+    background-color: rgba(255, 0, 0, 0.2);
+    color: #ff3333;
+}
+
+.severity-medium {
+    background-color: rgba(255, 165, 0, 0.2);
+    color: #ffaa33;
+}
+
+.severity-low {
+    background-color: rgba(51, 255, 51, 0.2);
+    color: #33ff33;
 }
