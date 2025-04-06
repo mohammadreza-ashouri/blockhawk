@@ -5,7 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlockHawk - Cross-Chain Security Monitor</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        /* Additional styles for the chart */
+        .chart-container {
+            height: 200px;
+            width: 100%;
+            position: relative;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke: #33ff33;
+            stroke-width: 2;
+        }
+
+        .chart-area {
+            fill: rgba(51, 255, 51, 0.1);
+        }
+
+        .chart-point {
+            fill: #33ff33;
+            stroke: #000;
+            stroke-width: 1;
+        }
+
+        .chart-grid {
+            stroke: rgba(51, 255, 51, 0.2);
+            stroke-width: 1;
+        }
+
+        .chart-axis {
+            stroke: #33ff33;
+            stroke-width: 2;
+        }
+
+        .chart-label {
+            fill: #33ff33;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+        }
+
+        .chart-title {
+            fill: #33ff33;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Pulse animation for the "live" indicator */
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        .live-indicator {
+            color: #33ff33;
+            animation: pulse 1.5s infinite;
+            font-size: 0.8rem;
+        }
+    </style>
 </head>
 <body class="matrix-animation">
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -48,14 +109,86 @@
             </div>
             <div class="col-md-6">
                 <div class="card mb-4">
-                    <div class="card-header">
-                        <h5>Ripple Status</h5>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Transaction Activity</h5>
+                        <span class="live-indicator"><i class="fas fa-circle me-1"></i> LIVE</span>
                     </div>
-                    <div class="card-body" id="ripple-status">
-                        <div class="d-flex justify-content-center">
-                            <div class="spinner-border text-success" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <svg width="100%" height="100%" viewBox="0 0 560 200" preserveAspectRatio="none">
+                                <!-- Grid lines -->
+                                <line x1="40" y1="20" x2="40" y2="170" class="chart-grid" />
+                                <line x1="40" y1="170" x2="540" y2="170" class="chart-grid" />
+                                
+                                <line x1="40" y1="45" x2="540" y2="45" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="40" y1="70" x2="540" y2="70" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="40" y1="95" x2="540" y2="95" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="40" y1="120" x2="540" y2="120" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="40" y1="145" x2="540" y2="145" class="chart-grid" stroke-dasharray="4 4" />
+                                
+                                <line x1="123" y1="20" x2="123" y2="170" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="206" y1="20" x2="206" y2="170" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="289" y1="20" x2="289" y2="170" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="372" y1="20" x2="372" y2="170" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="455" y1="20" x2="455" y2="170" class="chart-grid" stroke-dasharray="4 4" />
+                                <line x1="540" y1="20" x2="540" y2="170" class="chart-grid" />
+                                
+                                <!-- X and Y axis -->
+                                <line x1="40" y1="170" x2="540" y2="170" class="chart-axis" />
+                                <line x1="40" y1="20" x2="40" y2="170" class="chart-axis" />
+                                
+                                <!-- Data line (with animation) -->
+                                <path id="line-path" class="chart-line" d="M40,100 L75,110 L110,90 L145,115 L180,85 L215,100 L250,80 L285,60 L320,70 L355,65 L390,85 L425,70 L460,50 L495,65 L530,45">
+                                    <animate 
+                                        attributeName="d" 
+                                        from="M40,170 L75,170 L110,170 L145,170 L180,170 L215,170 L250,170 L285,170 L320,170 L355,170 L390,170 L425,170 L460,170 L495,170 L530,170" 
+                                        to="M40,100 L75,110 L110,90 L145,115 L180,85 L215,100 L250,80 L285,60 L320,70 L355,65 L390,85 L425,70 L460,50 L495,65 L530,45" 
+                                        dur="1.5s"
+                                        begin="0.5s"
+                                        fill="freeze" 
+                                    />
+                                </path>
+                                
+                                <!-- Area under the line -->
+                                <path id="area-path" class="chart-area" d="M40,100 L75,110 L110,90 L145,115 L180,85 L215,100 L250,80 L285,60 L320,70 L355,65 L390,85 L425,70 L460,50 L495,65 L530,45 L530,170 L40,170 Z">
+                                    <animate 
+                                        attributeName="d" 
+                                        from="M40,170 L75,170 L110,170 L145,170 L180,170 L215,170 L250,170 L285,170 L320,170 L355,170 L390,170 L425,170 L460,170 L495,170 L530,170 L530,170 L40,170 Z" 
+                                        to="M40,100 L75,110 L110,90 L145,115 L180,85 L215,100 L250,80 L285,60 L320,70 L355,65 L390,85 L425,70 L460,50 L495,65 L530,45 L530,170 L40,170 Z" 
+                                        dur="1.5s"
+                                        begin="0.5s"
+                                        fill="freeze" 
+                                    />
+                                </path>
+                                
+                                <!-- Anomaly points that pulse -->
+                                <circle cx="320" cy="70" r="5" class="chart-point">
+                                    <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite" begin="2s" />
+                                </circle>
+                                <circle cx="460" cy="50" r="5" class="chart-point">
+                                    <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite" begin="2.5s" />
+                                </circle>
+                                
+                                <!-- Axis labels -->
+                                <text x="40" y="190" class="chart-label">5m ago</text>
+                                <text x="123" y="190" class="chart-label">4m ago</text>
+                                <text x="206" y="190" class="chart-label">3m ago</text>
+                                <text x="289" y="190" class="chart-label">2m ago</text>
+                                <text x="372" y="190" class="chart-label">1m ago</text>
+                                <text x="455" y="190" class="chart-label">30s ago</text>
+                                <text x="540" y="190" class="chart-label">now</text>
+                                
+                                <text x="30" y="170" class="chart-label" text-anchor="end">0</text>
+                                <text x="30" y="145" class="chart-label" text-anchor="end">100</text>
+                                <text x="30" y="120" class="chart-label" text-anchor="end">200</text>
+                                <text x="30" y="95" class="chart-label" text-anchor="end">300</text>
+                                <text x="30" y="70" class="chart-label" text-anchor="end">400</text>
+                                <text x="30" y="45" class="chart-label" text-anchor="end">500</text>
+                                <text x="30" y="20" class="chart-label" text-anchor="end">600</text>
+                                
+                                <!-- Chart title and context -->
+                                <text x="290" y="15" class="chart-title" text-anchor="middle">Transactions Per Minute</text>
+                            </svg>
                         </div>
                     </div>
                 </div>
