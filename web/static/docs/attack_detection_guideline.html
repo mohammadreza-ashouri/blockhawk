@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockHawk: Security Attack Detection Capabilities</title>
+    <style>
+        /* Matrix-inspired theme */
+        body {
+            background-color: #000;
+            color: #33ff33; /* Matrix green */
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid #33ff33;
+            position: relative;
+        }
+
+        /* Matrix animation effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text y="30" font-family="monospace" fill="%2333ff33">10011</text><text y="50" font-family="monospace" fill="%2333ff33">01101</text><text y="70" font-family="monospace" fill="%2333ff33">11010</text><text y="90" font-family="monospace" fill="%2333ff33">10101</text></svg>');
+        }
+
+        h1, h2, h3, h4 {
+            color: #33ff33;
+            text-shadow: 0 0 10px rgba(51, 255, 51, 0.7);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-top: 2em;
+            border-bottom: 1px solid #33ff33;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            margin-top: 1.5em;
+        }
+
+        p {
+            margin-bottom: 1.5em;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        th, td {
+            border: 1px solid #33ff33;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(51, 255, 51, 0.1);
+        }
+
+        tr:hover {
+            background-color: rgba(51, 255, 51, 0.05);
+        }
+
+        /* Code blocks */
+        pre {
+            background-color: rgba(51, 255, 51, 0.05);
+            padding: 15px;
+            border-left: 3px solid #33ff33;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            color: #33ff33;
+        }
+
+        /* Glowing effect for special elements */
+        .glow {
+            text-shadow: 0 0 10px rgba(51, 255, 51, 0.7);
+            animation: glow 1.5s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px rgba(51, 255, 51, 0.7);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(51, 255, 51, 0.9);
+            }
+        }
+
+        /* Matrix animation for elements */
+        @keyframes matrix-glow {
+            0% { text-shadow: 0 0 5px rgba(51, 255, 51, 0.7); }
+            50% { text-shadow: 0 0 20px rgba(51, 255, 51, 0.9); }
+            100% { text-shadow: 0 0 5px rgba(51, 255, 51, 0.7); }
+        }
+
+        .matrix-glow {
+            animation: matrix-glow 2s infinite;
+        }
+
+        /* Attack cards */
+        .attack-card {
+            border: 1px solid #33ff33;
+            background-color: rgba(51, 255, 51, 0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.2);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .attack-card:hover {
+            box-shadow: 0 0 25px rgba(51, 255, 51, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .attack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(51, 255, 51, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .attack-title {
+            font-size: 1.4em;
+            margin: 0;
+        }
+
+        .severity {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .severity-high {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #ff6666;
+            border: 1px solid #ff6666;
+        }
+
+        .severity-medium {
+            background-color: rgba(255, 165, 0, 0.2);
+            color: #ffaa33;
+            border: 1px solid #ffaa33;
+        }
+
+        .severity-low {
+            background-color: rgba(255, 255, 0, 0.2);
+            color: #ffff33;
+            border: 1px solid #ffff33;
+        }
+
+        .detection-method, .anomaly-explanation, .handling-guidelines, .example-protection {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #33ff33;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+
+        ul li:before {
+            content: ">";
+            position: absolute;
+            left: 0;
+            color: #33ff33;
+        }
+
+        .response-capabilities {
+            background-color: rgba(51, 255, 51, 0.05);
+            border-left: 3px solid #33ff33;
+            padding: 15px;
+            margin: 30px 0;
+        }
+
+        .implementation-guidelines {
+            background-color: rgba(51, 255, 51, 0.05);
+            border: 1px dashed #33ff33;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        /* Attack-specific highlight colors */
+        .price-oracle {
+            border-left: 5px solid #ff3366;
+        }
+        
+        .account-data {
+            border-left: 5px solid #33cc99;
+        }
+        
+        .cpi {
+            border-left: 5px solid #ff9933;
+        }
+        
+        .frequency {
+            border-left: 5px solid #3399ff;
+        }
+        
+        .compute-unit {
+            border-left: 5px solid #cc66ff;
+        }
+        
+        .pda {
+            border-left: 5px solid #ffcc33;
+        }
+
+        /* Dashboard screenshot */
+        .dashboard-screenshot {
+            max-width: 100%;
+            border: 1px solid #33ff33;
+            margin: 20px 0;
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.3);
+        }
+
+        .contact-info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #33ff33;
+            background-color: rgba(51, 255, 51, 0.05);
+            box-shadow: 0 0 10px rgba(51, 255, 51, 0.3);
+        }
+
+        .contact-link {
+            color: #33ff33;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        .contact-link:hover {
+            text-shadow: 0 0 10px rgba(51, 255, 51, 0.9);
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add matrix effect to headers
+            const headers = document.querySelectorAll('h1, h2');
+            headers.forEach(header => {
+                header.classList.add('matrix-glow');
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    <div class="container">
+        <header>
+            <h1>BlockHawk</h1>
+            <h3>Security Attack Detection Capabilities</h3>
+            <div class="contact-info">
+                <a href="mailto:ashouri7774@gmail.com" class="contact-link">Email: ashouri7774@gmail.com</a>
+                <a href="https://discord.gg/mo9990871" class="contact-link">Discord: @mo9990871</a>
+                <a href="https://t.me/ashouri777" class="contact-link">Telegram: @ashouri777</a>
+            </div>
+        </header>
+
+        <section>
+            <p class="glow">BlockHawk provides specialized detection for Solana-specific attack vectors. This document details the types of attacks detected, why they're considered anomalous, and guidelines for handling each threat type.</p>
+
+            <div class="attack-card price-oracle">
+                <div class="attack-header">
+                    <h3 class="attack-title">1. Price Oracle Manipulation Attacks</h3>
+                    <span class="severity severity-high">HIGH SEVERITY</span>
+                </div>
+                
+                <div class="detection-method">
+                    <span class="section-title">Detection Method:</span>
+                    <ul>
+                        <li>Multiple transactions affecting the same price oracle in rapid succession</li>
+                        <li>Unusual trading volumes against specific liquidity pools</li>
+                        <li>Z-score analysis of price movements exceeding historical volatility by 3-5σ</li>
+                    </ul>
+                </div>
+                
+                <div class="anomaly-explanation">
+                    <span class="section-title">Why It's An Anomaly:</span>
+                    <p>When BlockHawk detects a series of trades causing price movements that statistically deviate from normal patterns (especially if from new or rarely-used addresses), it signals potential market manipulation.</p>
+                </div>
+                
+                <div class="handling-guidelines">
+                    <span class="section-title">Handling Guidelines:</span>
+                    <ul>
+                        <li>Immediately pause dependent protocols' liquidation functions</li>
+                        <li>Alert protocol admins via priority channels</li>
+                        <li>Implement circuit breaker to temporarily switch to TWAP oracles</li>
+                        <li>Analyze transaction sequences to identify manipulator addresses</li>
+                    </ul>
+                </div>
+                
+                <div class="example-protection">
+                    <span class="section-title">Example Protection:</span>
+                    <p>During the Mango Markets incident, this pattern would have triggered alerts within the first few transactions of the $114M exploit, potentially providing time to pause withdrawals.</p>
+                </div>
+            </div>
+
+            <div class="attack-card account-data">
+                <div class="attack-header">
+                    <h3 class="attack-title">2. Account Data Validation Attacks</h3>
+                    <span class="severity severity-high">HIGH SEVERITY</span>
+                </div>
+                
+                <div class="detection-method">
+                    <span class="section-title">Detection Method:</span>
+                    <ul>
+                        <li>Unusual account ownership relationships</li>
+                        <li>Non-standard account data size changes</li>
+                        <li>Unexpected account type transitions</li>
+                    </ul>
+                </div>
+                
+                <div class="anomaly-explanation">
+                    <span class="section-title">Why It's An Anomaly:</span>
+                    <p>Legitimate transactions rarely involve unexpected changes to fundamental account properties. Pattern recognition identifies when accounts are used in ways that deviate from their designed purposes.</p>
+                </div>
+                
+                <div class="handling-guidelines">
+                    <span class="section-title">Handling Guidelines:</span>
+                    <ul>
+                        <li>Flag and block transactions with suspicious account relationship patterns</li>
+                        <li>Alert developers to potential validation bypass attempts</li>
+                        <li>Temporarily restrict functions involving affected accounts</li>
+                        <li>Implement emergency fixes to validation logic</li>
+                    </ul>
+                </div>
+                
+                <div class="example-protection">
+                    <span class="section-title">Example Protection:</span>
+                    <p>BlockHawk would identify the Cashio infinite mint vulnerability by detecting abnormal account relationship patterns before significant funds were extracted.</p>
+                </div>
+            </div>
+
+            <div class="attack-card cpi">
+                <div class="attack-header">
+                    <h3 class="attack-title">3. Cross-Program Invocation (CPI) Attacks</h3>
+                    <span class="severity severity-medium">MEDIUM SEVERITY</span>
+                </div>
+                
+                <div class="detection-method">
+                    <span class="section-title">Detection Method:</span>
+                    <ul>
+                        <li>Unusual CPI call sequences</li>
+                        <li>Unexpected program interactions</li>
+                        <li>Deviation from normal program invocation patterns</li>
+                    </ul>
+                </div>
+                
+                <div class="anomaly-explanation">
+                    <span class="section-title">Why It's An Anomaly:</span>
+                    <p>Programs typically interact with a predictable set of other programs in specific sequences. Unusual call patterns often indicate attempts to exploit trust relationships.</p>
+                </div>
+                
+                <div class="handling-guidelines">
+                    <span class="section-title">Handling Guidelines:</span>
+                    <ul>
+                        <li>Implement program allowlisting for sensitive operations</li>
+                        <li>Block unusual CPI sequences at protocol level</li>
+                        <li>Require multi-signature approval for sensitive program interactions</li>
+                        <li>Review and restrict program authority relationships</li>
+                    </ul>
+                </div>
+                
+                <div class="example-protection">
+                    <span class="section-title">Example Protection:</span>
+                    <p>By analyzing program invocation patterns, BlockHawk can identify when attackers attempt to exploit cross-program permission inheritance issues.</p>
+                </div>
+            </div>
+
+            <div class="attack-card frequency">
+                <div class="attack-header">
+                    <h3 class="attack-title">4. Transaction Frequency Anomalies</h3>
+                    <span class="severity severity-medium">MEDIUM SEVERITY</span>
+                </div>
+                
+                <div class="detection-method">
+                    <span class="section-title">Detection Method:</span>
+                    <ul>
+                        <li>Statistical analysis of transaction frequency per address</li>
+                        <li>Time-series analysis of transaction patterns</li>
+                        <li>Adaptation to normal behaviors for different address types</li>
+                    </ul>
+                </div>
+                
+                <div class="anomaly-explanation">
+                    <span class="section-title">Why It's An Anomaly:</span>
+                    <p>Addresses typically exhibit consistent transaction patterns. Sudden bursts of activity from previously quiet addresses or unusual timing patterns often precede attacks.</p>
+                </div>
+                
+                <div class="handling-guidelines">
+                    <span class="section-title">Handling Guidelines:</span>
+                    <ul>
+                        <li>Implement progressive rate limiting for suspicious addresses</li>
+                        <li>Require additional verification for high-frequency transactions</li>
+                        <li>Apply time-delay for large withdrawals following unusual activity</li>
+                        <li>Monitor transaction destination patterns</li>
+                    </ul>
+                </div>
+                
+                <div class="example-protection">
+                    <span class="section-title">Example Protection:</span>
+                    <p>BlockHawk detected a transaction frequency anomaly during beta testing where an attacker attempted a series of rapid withdrawals from a compromised wallet.</p>
+                </div>
+            </div>
+
+            <div class="attack-card compute-unit">
+                <div class="attack-header">
+                    <h3 class="attack-title">5. Compute Unit Exhaustion Attacks</h3>
+                    <span class="severity severity-medium">MEDIUM SEVERITY</span>
+                </div>
+                
+                <div class="detection-method">
+                    <span class="section-title">Detection Method:</span>
+                    <ul>
+                        <li>Monitoring compute unit consumption patterns</li>
+                        <li>Detecting transactions that approach but don't exceed limits</li>
+                        <li>Identifying unusual instruction combinations designed to consume resources</li>
+                    </ul>
+                </div>
+                
+                <div class="anomaly-explanation">
+                    <span class="section-title">Why It's An Anomaly:</span>
+                    <p>Normal transactions rarely optimize for maximum compute unit consumption. Patterns that consistently consume near-maximum resources often indicate attempts to bypass security checks.</p>
+                </div>
+                
+                <div class="handling-guidelines">
+                    <span class="section-title">Handling Guidelines:</span>
+                    <ul>
+                        <li>Reserve additional compute units for security checks</li>
+                        <li>Implement tiered security measures with varying compute requirements</li>
+                        <li>Flag transactions with suspicious resource consumption patterns</li>
+                        <li>Consider redesigning critical security checks to use fewer compute units</li>
+                    </ul>
+                </div>
+                
+                <div class="example-protection">
+                    <span class="section-title">Example Protection:</span>
+                    <p>By detecting compute unit patterns common in bypass attempts, BlockHawk helps protect against attacks that attempt to exhaust resources before security checks run.</p>
+                </div>
+            </div>
+
+            <div class="attack-card pda">
+                <div class="attack-header">
+                    <h3 class="attack-title">6. PDA (Program Derived Address) Manipulation</h3>
+                    <span class="severity severity-high">HIGH SEVERITY</span>
+                </div>
+                
+                <div class="detection-method">
+                    <span class="section-title">Detection Method:</span>
+                    <ul>
+                        <li>Tracking PDA derivation patterns</li>
+                        <li>Monitoring seed manipulation attempts</li>
+                        <li>Detecting unexpected address relationships</li>
+                    </ul>
+                </div>
+                
+                <div class="anomaly-explanation">
+                    <span class="section-title">Why It's An Anomaly:</span>
+                    <p>PDAs are derived deterministically and should follow predictable patterns based on program logic. Attempts to manipulate or forge unexpected PDAs often indicate exploit attempts.</p>
+                </div>
+                
+                <div class="handling-guidelines">
+                    <span class="section-title">Handling Guidelines:</span>
+                    <ul>
+                        <li>Validate all PDA relationships thoroughly</li>
+                        <li>Implement additional checks for sensitive PDAs</li>
+                        <li>Monitor for attempts to create PDAs with unusual seeds</li>
+                        <li>Review cross-program PDA access patterns</li>
+                    </ul>
+                </div>
+                
+                <div class="example-protection">
+                    <span class="section-title">Example Protection:</span>
+                    <p>The system can detect anomalous PDA derivation attempts that might indicate someone trying to gain unauthorized access to program-controlled accounts.</p>
+                </div>
+            </div>
+
+            <div class="response-capabilities">
+                <h3>Real-time Response Capabilities</h3>
+                <p>Beyond detection, BlockHawk provides real-time response options:</p>
+                <ul>
+                    <li><strong>Instant Alerts:</strong> Critical alerts are delivered within 500ms of detection through multiple channels</li>
+                    <li><strong>Governance Integration:</strong> Automatic triggering of governance proposals for emergency actions</li>
+                    <li><strong>Circuit Breaker Activation:</strong> API to trigger protocol circuit breakers when high-confidence threats are detected</li>
+                    <li><strong>Containment Measures:</strong> Suggested containment actions based on attack type and severity</li>
+                </ul>
+            </div>
+
+            <div class="implementation-guidelines">
+                <h3>Implementation Guidelines</h3>
+                <p>When implementing BlockHawk for your protocol:</p>
+                <ul>
+                    <li><strong>Baseline Establishment Period:</strong> Allow 7-14 days for the system to learn normal behavior patterns</li>
+                    <li><strong>Alert Threshold Tuning:</strong> Work with security teams to calibrate sensitivity based on risk tolerance</li>
+                    <li><strong>Response Playbook Development:</strong> Create predefined response procedures for each alert type</li>
+                    <li><strong>Integration Testing:</strong> Conduct simulated attack exercises to validate detection capabilities</li>
+                </ul>
+                <p>Each of these detection mechanisms is specifically tuned to Solana's unique architecture and security model, providing protection that traditional audits and generic monitoring solutions cannot match.</p>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
