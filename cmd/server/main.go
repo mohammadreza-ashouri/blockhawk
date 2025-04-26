@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -38,8 +40,10 @@ var (
 	chainStatus      = make(map[models.BlockchainType]models.ChainStatus)
 	chainStatusMutex sync.RWMutex
 
-	db         *database.PostgresStore
+	// Database store (changed from PostgresStore to a more generic variable)
+	dbStore    interface{}
 	apiHandler *api.API
+	useSQLite  = true // Flag to determine which database to use
 )
 
 func main() {
@@ -51,13 +55,35 @@ func main() {
 		log.Printf("Warning: Failed to load config, using defaults: %v", err)
 	}
 
-	// Initialize database
-	db, err = database.NewPostgresStore(cfg.DatabaseURL)
-	if err != nil {
-		log.Printf("Warning: Failed to connect to database, running without user features: %v", err)
-		// Continue without database features
+	// Create data directory if it doesn't exist
+	dataDir := "./data"
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		log.Fatalf("Failed to create data directory: %v", err)
+	}
+
+	// Initialize database - using SQLite
+	if useSQLite {
+		dbPath := filepath.Join(dataDir, "blockhawk.db")
+		sqliteStore, err := database.NewSQLiteStore(dbPath)
+		if err != nil {
+			log.Printf("Warning: Failed to connect to SQLite database, running without user features: %v", err)
+			// Continue without database features
+		} else {
+			dbStore = sqliteStore
+			apiHandler = api.NewAPI(sqliteStore)
+			log.Println("Successfully connected to SQLite database")
+		}
 	} else {
-		apiHandler = api.NewAPI(db)
+		// Original PostgreSQL code (kept for reference/fallback)
+		postgresStore, err := database.NewPostgresStore(cfg.DatabaseURL)
+		if err != nil {
+			log.Printf("Warning: Failed to connect to Postgres database, running without user features: %v", err)
+			// Continue without database features
+		} else {
+			dbStore = postgresStore
+			apiHandler = api.NewAPI(postgresStore)
+			log.Println("Successfully connected to PostgreSQL database")
+		}
 	}
 
 	// Create and start blockchain monitors
@@ -75,6 +101,13 @@ func main() {
 		solanaMonitor.Stop()
 		rippleMonitor.Stop()
 		securityAnalyzer.Stop()
+
+		// Close database connection if using SQLite
+		if useSQLite {
+			if store, ok := dbStore.(*database.SQLiteStore); ok && store != nil {
+				store.Close()
+			}
+		}
 	}()
 
 	// Connect transaction streams to analyzer
@@ -144,7 +177,25 @@ func withAPIKey(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		user, err := db.GetUserByAPIKey(apiKey)
+		var user *models.User
+		var err error
+
+		if useSQLite {
+			store, ok := dbStore.(*database.SQLiteStore)
+			if !ok || store == nil {
+				http.Error(w, "Database unavailable", http.StatusServiceUnavailable)
+				return
+			}
+			user, err = store.GetUserByAPIKey(apiKey)
+		} else {
+			store, ok := dbStore.(*database.PostgresStore)
+			if !ok || store == nil {
+				http.Error(w, "Database unavailable", http.StatusServiceUnavailable)
+				return
+			}
+			user, err = store.GetUserByAPIKey(apiKey)
+		}
+
 		if err != nil || user == nil {
 			http.Error(w, "Invalid API key", http.StatusUnauthorized)
 			return
