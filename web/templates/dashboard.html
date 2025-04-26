@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BlockHawk Dashboard</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>BlockHawk Dashboard</h1>
+            <button onclick="logout()">Logout</button>
+        </header>
+        
+        <div id="projects-container">
+            <h2>Your Projects</h2>
+            <button onclick="showAddProjectForm()">Add Project</button>
+            <div id="projects-list"></div>
+        </div>
+        
+        <div id="add-project-form" style="display: none;">
+            <h3>Add New Project</h3>
+            <form onsubmit="createProject(event)">
+                <input type="text" id="project-name" placeholder="Project Name" required>
+                <input type="text" id="contract-addresses" placeholder="Contract addresses (comma-separated)" required>
+                <select id="network">
+                    <option value="mainnet">Mainnet</option>
+                    <option value="devnet">Devnet</option>
+                </select>
+                <input type="url" id="webhook-url" placeholder="Webhook URL (optional)">
+                <button type="submit">Create Project</button>
+                <button type="button" onclick="hideAddProjectForm()">Cancel</button>
+            </form>
+        </div>
+        
+        <div id="project-details" style="display: none;">
+            <h3>Project Details</h3>
+            <div id="project-info"></div>
+            <h4>Recent Alerts</h4>
+            <div id="project-alerts"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_KEY = localStorage.getItem('api_key');
+        
+        if (!API_KEY) {
+            window.location.href = '/login';
+        }
+        
+        async function loadProjects() {
+            const response = await fetch('/api/v1/projects/list', {
+                headers: { 'X-API-Key': API_KEY }
+            });
+            
+            if (response.ok) {
+                const projects = await response.json();
+                const projectsList = document.getElementById('projects-list');
+                projectsList.innerHTML = projects.map(project => `
+                    <div class="project-card">
+                        <h3>${project.name}</h3>
+                        <p>Network: ${project.network}</p>
+                        <p>Contracts: ${project.contract_addresses.join(', ')}</p>
+                        <button onclick="viewProjectDetails('${project.id}')">View Details</button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        async function createProject(event) {
+            event.preventDefault();
+            
+            const data = {
+                name: document.getElementById('project-name').value,
+                contract_addresses: document.getElementById('contract-addresses').value.split(',').map(a => a.trim()),
+                network: document.getElementById('network').value,
+                webhook_url: document.getElementById('webhook-url').value
+            };
+            
+            const response = await fetch('/api/v1/projects', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': API_KEY
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                hideAddProjectForm();
+                loadProjects();
+            } else {
+                alert('Error creating project');
+            }
+        }
+        
+        function showAddProjectForm() {
+            document.getElementById('add-project-form').style.display = 'block';
+        }
+        
+        function hideAddProjectForm() {
+            document.getElementById('add-project-form').style.display = 'none';
+            document.getElementById('project-name').value = '';
+            document.getElementById('contract-addresses').value = '';
+            document.getElementById('webhook-url').value = '';
+        }
+        
+        async function viewProjectDetails(projectId) {
+            const response = await fetch(`/api/v1/alerts?project_id=${projectId}`, {
+                headers: { 'X-API-Key': API_KEY }
+            });
+            
+            if (response.ok) {
+                const alerts = await response.json();
+                const projectDetails = document.getElementById('project-details');
+                const projectAlerts = document.getElementById('project-alerts');
+                
+                projectAlerts.innerHTML = alerts.map(alert => `
+                    <div class="alert-card ${alert.severity}">
+                        <h4>${alert.title}</h4>
+                        <p>${alert.description}</p>
+                        <p>Time: ${new Date(alert.created_at).toLocaleString()}</p>
+                    </div>
+                `).join('');
+                
+                projectDetails.style.display = 'block';
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('api_key');
+            window.location.href = '/login';
+        }
+        
+        // Load projects on page load
+        loadProjects();
+    </script>
+</body>
+</html>

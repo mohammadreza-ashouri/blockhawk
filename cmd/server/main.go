@@ -13,6 +13,9 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/mohammadreza-ashouri/blockhawk/internal/analyzer"
+	"github.com/mohammadreza-ashouri/blockhawk/internal/api" // Add this import
+	"github.com/mohammadreza-ashouri/blockhawk/internal/config"
+	"github.com/mohammadreza-ashouri/blockhawk/internal/database"
 	"github.com/mohammadreza-ashouri/blockhawk/internal/models"
 	"github.com/mohammadreza-ashouri/blockhawk/internal/ripple"
 	"github.com/mohammadreza-ashouri/blockhawk/internal/solana"
@@ -34,10 +37,28 @@ var (
 	// Chain status storage
 	chainStatus      = make(map[models.BlockchainType]models.ChainStatus)
 	chainStatusMutex sync.RWMutex
+
+	db         *database.PostgresStore
+	apiHandler *api.API
 )
 
 func main() {
 	log.Println("Starting BlockHawk - Cross-Chain Security Monitor")
+
+	// Load configuration
+	cfg, err := config.Load()
+	if err != nil {
+		log.Printf("Warning: Failed to load config, using defaults: %v", err)
+	}
+
+	// Initialize database
+	db, err = database.NewPostgresStore(cfg.DatabaseURL)
+	if err != nil {
+		log.Printf("Warning: Failed to connect to database, running without user features: %v", err)
+		// Continue without database features
+	} else {
+		apiHandler = api.NewAPI(db)
+	}
 
 	// Create and start blockchain monitors
 	solanaMonitor := solana.NewMonitor()
@@ -109,6 +130,55 @@ func trackChainStatus(statusChan <-chan models.ChainStatus) {
 	}
 }
 
+// Helper functions for authentication middleware
+func withAPIKey(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if apiHandler == nil {
+			http.Error(w, "Feature not available", http.StatusServiceUnavailable)
+			return
+		}
+
+		apiKey := r.Header.Get("X-API-Key")
+		if apiKey == "" {
+			http.Error(w, "API key required", http.StatusUnauthorized)
+			return
+		}
+
+		user, err := db.GetUserByAPIKey(apiKey)
+		if err != nil || user == nil {
+			http.Error(w, "Invalid API key", http.StatusUnauthorized)
+			return
+		}
+
+		// Add user to context (optional, if you need it in handlers)
+		next(w, r)
+	}
+}
+
+func withAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if apiHandler == nil {
+			// Serve regular dashboard if no auth available
+			http.ServeFile(w, r, "./web/templates/index.html")
+			return
+		}
+
+		// Check for session cookie or API key
+		apiKey := r.Header.Get("X-API-Key")
+		if apiKey == "" {
+			// Redirect to login page
+			http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+			return
+		}
+
+		next(w, r)
+	}
+}
+
+func serveDashboard(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./web/templates/dashboard.html")
+}
+
 // setupHTTPServer configures the web server
 func setupHTTPServer() {
 	// Serve static files
@@ -118,9 +188,6 @@ func setupHTTPServer() {
 	// Serve docs files
 	docsFs := http.FileServer(http.Dir("./web/docs"))
 	http.Handle("/docs/", http.StripPrefix("/docs/", docsFs))
-
-	
-
 
 	// API endpoints
 	http.HandleFunc("/api/alerts", getAlertsHandler)
@@ -133,6 +200,30 @@ func setupHTTPServer() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/templates/index.html")
 	})
+
+	// Add authentication and project management endpoints if database is available
+	if apiHandler != nil {
+		// User authentication endpoints
+		http.HandleFunc("/api/v1/register", apiHandler.RegisterUser)
+		http.HandleFunc("/api/v1/login", apiHandler.LoginUser)
+
+		// Serve login and register pages
+		http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "./web/templates/login.html")
+		})
+		http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "./web/templates/register.html")
+		})
+
+		// Project management endpoints
+		http.HandleFunc("/api/v1/projects", withAPIKey(apiHandler.CreateProject))
+		http.HandleFunc("/api/v1/projects/list", withAPIKey(apiHandler.GetProjects))
+		http.HandleFunc("/api/v1/projects/", withAPIKey(apiHandler.GetProject))
+		http.HandleFunc("/api/v1/alerts", withAPIKey(apiHandler.GetAlerts))
+
+		// Dashboard with authentication
+		http.HandleFunc("/dashboard", withAuth(serveDashboard))
+	}
 
 	// Start HTTP server in a goroutine
 	go func() {
